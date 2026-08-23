@@ -858,7 +858,7 @@ async function initFirebaseSync() {
         updateSyncBadge("Luar Talian (Tempatan)", "bg-amber-50 text-amber-700");
         loadLocalState(); // Fallback ke local storage jika gagal berhubung
     }
-
+}
         window.saveAllDataToCloud = async function() {
             saveLocalState();
             if (!firestoreDocRef || !auth.currentUser) {
