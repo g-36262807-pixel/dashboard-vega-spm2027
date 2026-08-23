@@ -821,48 +821,43 @@
             dot.className = `w-2 h-2 rounded-full ${dotClass} animate-pulse`;
             text.textContent = statusText;
         }
-
-        async function initFirebaseSync() {
-            try {
-                updateSyncBadge("Menghubungkan ke Awan...", "bg-accent-50 text-accent-700 border-accent-200", "bg-accent-500");
-                
-                let userCredential;
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    userCredential = await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    userCredential = await signInAnonymously(auth);
-                }
-
-                if (!userCredential.user) return;
-
-                firestoreDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'dashboard', 'biodojo_vega_state');
-
-                onSnapshot(firestoreDocRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        const cloudData = snapshot.data();
-                        if (cloudData && cloudData.tests && cloudData.students) {
-                            appState.tests = cloudData.tests;
-                            appState.students = cloudData.students;
-                            if (cloudData.teacherPin) appState.teacherPin = cloudData.teacherPin;
-                            
-                            saveLocalState();
-                            populateStudentDropdowns();
-                            renderDashboard();
-                            updateSyncBadge("Masa Nyata (Terkini)", "bg-brand-50 text-brand-700 border-brand-200", "bg-brand-500");
-                        }
-                    } else {
-                        saveAllDataToCloud();
-                    }
-                }, (error) => {
-                    console.error("Firebase sync error:", error);
-                    updateSyncBadge("Luar Talian (Tempatan)", "bg-slate-100 text-slate-600 border-slate-300", "bg-slate-400");
-                });
-
-            } catch (err) {
-                console.error("Firebase Auth or Init error:", err);
-                updateSyncBadge("Mod Tempatan", "bg-slate-100 text-slate-600 border-slate-300", "bg-slate-400");
-            }
+async function initFirebaseSync() {
+    try {
+        // 1. Pastikan auth wujud (jika guna anonymous login)
+        if (!auth.currentUser) {
+            await signInAnonymously(auth);
         }
+
+        // 2. Gunakan onSnapshot untuk sync masa nyata dari Firestore
+        onSnapshot(firestoreDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const cloudData = docSnap.data();
+                
+                // Ambil data dari awan dan masukkan ke appState
+                if (cloudData.tests) appState.tests = cloudData.tests;
+                if (cloudData.students) appState.students = cloudData.students;
+                if (cloudData.teacherPin) appState.teacherPin = cloudData.teacherPin;
+
+                // Simpan ke local storage sebagai sandaran offline
+                saveLocalState();
+                
+                // Segarkan paparan skrin papan pemuka anda
+                if (typeof renderDashboard === 'function') {
+                    renderDashboard();
+                }
+                
+                updateSyncBadge("Masa Nyata (Terkini)", "bg-brand-50 text-brand-700");
+            } else {
+                // Jika dokumen belum wujud di awan, muat data tempatan
+                loadLocalState();
+            }
+        });
+
+    } catch (e) {
+        console.error("Firebase sync error:", e);
+        updateSyncBadge("Luar Talian (Tempatan)", "bg-amber-50 text-amber-700");
+        loadLocalState(); // Fallback ke local storage jika gagal berhubung
+    }
 
         window.saveAllDataToCloud = async function() {
             saveLocalState();
