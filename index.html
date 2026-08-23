@@ -2061,33 +2061,6 @@
             renderDashboard();
             showToast("Set Ujian berjaya dipadam.", "success");
         };
-        <!-- Pustaka Firebase & Logik Pangkalan Data -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-        // Konfigurasi Firebase Cikgu
-        const firebaseConfig = {
-            apiKey: "AIzaSyBSoBW0cR9-c_fGJ2vNwakaitWnM7jXj-I",
-            authDomain: "dashboard-bio-dojo-vega-2027.firebaseapp.com",
-            projectId: "dashboard-bio-dojo-vega-2027",
-            storageBucket: "dashboard-bio-dojo-vega-2027.firebasestorage.app",
-            messagingSenderId: "294790840383",
-            appId: "1:294790840383:web:ea14abb5b4c211f214388a",
-            measurementId: "G-XG2KJ2TP7P"
-        };
-
-        // Inisialisasi Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Sambungkan fungsi pangkalan data ke tetingkap global
-        window.cloudDB = db;
-        
-        // Kemaskini status paparan sambungan di navbar
-        document.getElementById('syncStatusDot').className = "w-2 h-2 rounded-full bg-emerald-500";
-        document.getElementById('syncStatusText').innerText = "Awan Bersambung (Online)";
-        document.getElementById('syncStatusBadge').className = "flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 transition-all";
     </script>
 </body>
 </html>
