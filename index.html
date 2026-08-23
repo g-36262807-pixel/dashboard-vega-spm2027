@@ -821,12 +821,15 @@
             dot.className = `w-2 h-2 rounded-full ${dotClass} animate-pulse`;
             text.textContent = statusText;
         }
-async function initFirebaseSync() {
+aasync function initFirebaseSync() {
     try {
         // 1. Pastikan auth wujud (jika guna anonymous login)
         if (!auth.currentUser) {
             await signInAnonymously(auth);
         }
+
+        // Tentukan rujukan dokumen Firestore anda di sini (ubah nama koleksi/dokumen mengikut kod asal anda jika perlu)
+        // Contoh: const firestoreDocRef = doc(db, "namakoleksi", "namadokumen");
 
         // 2. Gunakan onSnapshot untuk sync masa nyata dari Firestore
         onSnapshot(firestoreDocRef, (docSnap) => {
