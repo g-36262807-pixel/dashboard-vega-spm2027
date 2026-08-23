@@ -600,29 +600,57 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global App ID & Firebase Setup
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'biodojo-vega-spm2027';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {
-                apiKey: "demo-api-key",
-                authDomain: "demo.firebaseapp.com",
-                projectId: "demo-project",
-                storageBucket: "demo.appspot.com",
-                messagingSenderId: "123456789",
-                appId: "1:123456789:web:123456"
-            };
+// Konfigurasi Firebase sebenar anda
+const firebaseConfig = {
+    apiKey: "AIzaSyBSoBW0cR9-c_fGJ2vNwakaitWnM7jXj-I",
+    authDomain: "dashboard-bio-dojo-vega-2027.firebaseapp.com",
+    projectId: "dashboard-bio-dojo-vega-2027",
+    storageBucket: "dashboard-bio-dojo-vega-2027.firebasestorage.app",
+    messagingSenderId: "294790840383",
+    appId: "1:294790840383:web:ea14abb5b4c211f214388a",
+    measurementId: "G-XG2KJ2TP7P"
+};
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+// Inisialisasi Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-        let firestoreDocRef = null;
+// Log masuk secara anonim untuk membolehkan pelayar membaca data
+signInAnonymously(auth)
+    .then(() => {
+        console.log("Berjaya log masuk secara anonim.");
+    })
+    .catch((error) => {
+        console.error("Ralat log masuk:", error);
+    });
 
+// Rujukan kepada Collection dan Document di Firestore
+// (Pastikan anda bina Collection bernama "dashboard" dan Document bernama "data_utama" di Firebase Console nanti)
+const docRef = doc(db, "dashboard", "data_utama");
+
+// Mendengar perubahan data secara masa nyata (Real-time)
+onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        console.log("Data terkini diterima:", data);
+        
+        // ==========================================
+        // KEMAS KINI PAPARAN HTML ANDA DI SINI
+        // Contoh: 
+        // document.getElementById('tajuk-utama').innerText = data. tajuk;
+        // document.getElementById('status-kelas').innerText = data.status;
+        // ==========================================
+        
+    } else {
+        console.log("Tiada dokumen dijumpai di pangkalan data.");
+    }
+});
+</script>
         const CHAPTERS = [
             // Tingkatan 4
             { id: "T4_1", code: "T4 - 1.0", name: "Pengenalan kepada Biologi dan Peraturan Makmal", level: "T4" },
