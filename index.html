@@ -821,15 +821,12 @@
             dot.className = `w-2 h-2 rounded-full ${dotClass} animate-pulse`;
             text.textContent = statusText;
         }
-aasync function initFirebaseSync() {
+async function initFirebaseSync() {
     try {
         // 1. Pastikan auth wujud (jika guna anonymous login)
         if (!auth.currentUser) {
             await signInAnonymously(auth);
         }
-
-        // Tentukan rujukan dokumen Firestore anda di sini (ubah nama koleksi/dokumen mengikut kod asal anda jika perlu)
-        // Contoh: const firestoreDocRef = doc(db, "namakoleksi", "namadokumen");
 
         // 2. Gunakan onSnapshot untuk sync masa nyata dari Firestore
         onSnapshot(firestoreDocRef, (docSnap) => {
@@ -859,7 +856,7 @@ aasync function initFirebaseSync() {
     } catch (e) {
         console.error("Firebase sync error:", e);
         updateSyncBadge("Luar Talian (Tempatan)", "bg-amber-50 text-amber-700");
-        loadLocalState(); // Fallback ke local storage jika gagal berhubung
+        loadLocalState(); 
     }
 }
         window.saveAllDataToCloud = async function() {
