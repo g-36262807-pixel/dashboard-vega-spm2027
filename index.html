@@ -859,28 +859,28 @@ async function initFirebaseSync() {
         loadLocalState(); 
     }
 }
-        window.saveAllDataToCloud = async function() {
-            saveLocalState();
-            if (!firestoreDocRef || !auth.currentUser) {
-                showToast("Data disimpan di peranti tempatan.", "info");
-                return;
-            }
-
-            try {
-                updateSyncBadge("Menyimpan ke Awan...", "bg-accent-50 text-accent-700 border-accent-200", "bg-accent-500");
-                await setDoc(firestoreDocRef, {
-                    tests: appState.tests,
-                    students: appState.students,
-                    teacherPin: appState.teacherPin,
-                    updatedAt: new Date().toISOString()
-                });
-                updateSyncBadge("Masa Nyata (Terkini)", "bg-brand-50 text-brand-700 border-brand-200", "bg-brand-500");
-                showToast("Data Bio-Dojo diselaraskan ke semua peranti murid!", "success");
-            } catch (e) {
-                console.error("Failed to sync to cloud:", e);
-                showToast("Gagal menyimpan ke awan. Disimpan di peranti tempatan.", "info");
-            }
-        };
+window.saveAllDataToCloud = async function() {
+    saveLocalState();
+    if (!firestoreDocRef || !auth.currentUser) {
+        showToast("Data disimpan di peranti tempatan.", "info");
+        return;
+    }
+    
+    try {
+        updateSyncBadge("Menyimpan ke Awan...", "bg-accent-50 text-accent-700 border-accent-200", "bg-accent-500");
+        await setDoc(firestoreDocRef, {
+            tests: appState.tests,
+            students: appState.students,
+            teacherPin: appState.teacherPin,
+            updatedAt: new Date().toISOString()
+        });
+        updateSyncBadge("Masa Nyata (Terkini)", "bg-brand-50 text-brand-700 border-brand-200", "bg-brand-500");
+        showToast("Data Bio-Dojo diselaraskan ke semua peranti murid!", "success");
+    } catch (e) {
+        console.error("Failed to sync to cloud:", e);
+        showToast("Gagal menyimpan ke awan. Disimpan di peranti tempatan.", "info");
+    }
+};
 
         function saveLocalState() {
             try {
