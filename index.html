@@ -622,7 +622,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let firestoreDocRef = null;
+let firestoreDocRef = doc(db, "dashboard", "vega-spm-2027");
 
         const CHAPTERS = [
             // Tingkatan 4
