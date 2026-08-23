@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Bio-Dojo Vega SPM 2027 - Masa Nyata</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -606,6 +604,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Global App ID & Firebase Setup
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'biodojo-vega-spm2027';
         const firebaseConfig = typeof __firebase_config !== 'undefined' 
             ? JSON.parse(__firebase_config) 
@@ -625,6 +624,7 @@
         let firestoreDocRef = null;
 
         const CHAPTERS = [
+            // Tingkatan 4
             { id: "T4_1", code: "T4 - 1.0", name: "Pengenalan kepada Biologi dan Peraturan Makmal", level: "T4" },
             { id: "T4_2", code: "T4 - 2.0", name: "Biologi Sel dan Organisasi Sel", level: "T4" },
             { id: "T4_3", code: "T4 - 3.0", name: "Pergerakan Bahan Merentasi Membran Plasma", level: "T4" },
@@ -640,6 +640,7 @@
             { id: "T4_13", code: "T4 - 13.0", name: "Homeostasis dan Sistem Urinari Manusia", level: "T4" },
             { id: "T4_14", code: "T4 - 14.0", name: "Sokongan dan Pergerakan dalam Manusia dan Haiwan", level: "T4" },
             { id: "T4_15", code: "T4 - 15.0", name: "Pembiakan Seks, Perkembangan dan Pertumbuhan", level: "T4" },
+            // Tingkatan 5
             { id: "T5_1", code: "T5 - 1.0", name: "Organisasi Tisu Tumbuhan dan Pertumbuhan", level: "T5" },
             { id: "T5_2", code: "T5 - 2.0", name: "Struktur dan Fungsi Daun", level: "T5" },
             { id: "T5_3", code: "T5 - 3.0", name: "Nutrisi dalam Tumbuhan", level: "T5" },
@@ -655,6 +656,7 @@
             { id: "T5_13", code: "T5 - 13.0", name: "Kejuruteraan Genetik dan Bioteknologi", level: "T5" }
         ];
 
+        // Master Student List (17 Students of Class 4 VEGA)
         const INITIAL_STUDENTS = [
             { id: 1, name: "ABDUL DANISH BIN ABDULLAH", className: "4 VEGA" },
             { id: 2, name: "AHMAD SYAHZANIRULLAH BIN AHMAD ZAIDI", className: "4 VEGA" },
@@ -675,6 +677,7 @@
             { id: 17, name: "SYAMIRUL AQIF BIN ABDULLAH", className: "4 VEGA" }
         ];
 
+        // Default Initial Application State
         let appState = {
             teacherPin: "1234",
             isTeacherMode: false,
@@ -793,6 +796,7 @@
 
         const STORAGE_KEY = "BIODOJO_VEGA_SPM2027_STATE_v1";
 
+        // Global Chart Handles
         let chartTrendsRef = null;
         let chartChapterBarRef = null;
         let chartStudentRadarRef = null;
@@ -875,7 +879,7 @@
                     updatedAt: new Date().toISOString()
                 });
                 updateSyncBadge("Masa Nyata (Terkini)", "bg-brand-50 text-brand-700 border-brand-200", "bg-brand-500");
-                showToast("Data Bio-Dojo diselaraskan ke semua peranti!", "success");
+                showToast("Data Bio-Dojo diselaraskan ke semua peranti murid!", "success");
             } catch (e) {
                 console.error("Failed to sync to cloud:", e);
                 showToast("Gagal menyimpan ke awan. Disimpan di peranti tempatan.", "info");
@@ -921,7 +925,11 @@
                         maxMarksRow.push(q.maxMarks);
                     });
 
-                    const sheetData = [headers, chapterRow, maxMarksRow];
+                    const sheetData = [
+                        headers,
+                        chapterRow,
+                        maxMarksRow
+                    ];
 
                     appState.students.forEach((s, idx) => {
                         const row = [idx + 1, s.name, s.className];
@@ -1507,170 +1515,204 @@
             const weakListEl = document.getElementById('studentWeakChaptersList');
             const detailsContainer = document.getElementById('studentTestDetailsContainer');
 
-            if (!nameEl) return;
-
             if (selectedId === "ALL") {
                 nameEl.textContent = "Purata Seluruh Kelas 4 VEGA";
                 classEl.textContent = "17 Murid • Bio-Dojo SPM 2027";
 
                 let sumAll = 0;
                 appState.students.forEach(s => sumAll += calculateStudentOverallAvg(s.id));
-                const classAvg = appState.students.length > 0 ? sumAll / appState.students.length : 0;
-                const gInfo = getGradeLabel(classAvg);
+                const overall = appState.students.length > 0 ? sumAll / appState.students.length : 0;
 
-                avgEl.textContent = classAvg.toFixed(1) + "%";
-                gradeEl.textContent = gInfo.grade;
+                avgEl.textContent = overall.toFixed(1) + "%";
+                gradeEl.textContent = getGradeLabel(overall).grade;
+            } else {
+                const student = appState.students.find(s => s.id == selectedId);
+                if (student) {
+                    nameEl.textContent = student.name;
+                    classEl.textContent = `Kelas: ${student.className} • SPM 2027`;
 
-                weakListEl.innerHTML = `<p class="text-xs text-slate-400 italic">Pilih murid spesifik di menu atas untuk melihat fokus ulang kaji individu.</p>`;
-                detailsContainer.innerHTML = `<p class="text-xs text-slate-400 italic">Perincian soalan individu hanya dipaparkan apabila murid tertentu dipilih.</p>`;
-                
-                renderStudentRadarChart(null, chapAnalytics);
-                return;
+                    const avg = calculateStudentOverallAvg(student.id);
+                    const gInfo = getGradeLabel(avg);
+
+                    avgEl.textContent = avg.toFixed(1) + "%";
+                    gradeEl.textContent = gInfo.grade;
+                }
             }
 
-            const student = appState.students.find(s => s.id == selectedId);
-            if (!student) return;
+            // Render Weak Chapters
+            weakListEl.innerHTML = '';
+            const weakChapters = [];
 
-            nameEl.textContent = student.name;
-            classEl.textContent = `Kelas: ${student.className} • ID: ${student.id}`;
+            CHAPTERS.forEach(ch => {
+                const cData = chapAnalytics[ch.code];
+                if (cData && cData.questionCount > 0) {
+                    let pct = 0;
+                    if (selectedId === "ALL") {
+                        pct = cData.totalPossible > 0 ? (cData.totalObtained / cData.totalPossible) * 100 : 0;
+                    } else {
+                        const sData = cData.studentMap[selectedId];
+                        pct = sData && sData.possible > 0 ? (sData.obtained / sData.possible) * 100 : 0;
+                    }
 
-            const studentAvg = calculateStudentOverallAvg(student.id);
-            const gInfo = getGradeLabel(studentAvg);
-
-            avgEl.textContent = studentAvg.toFixed(1) + "%";
-            gradeEl.textContent = gInfo.grade;
-
-            let weakChapters = [];
-            Object.values(chapAnalytics).forEach(ch => {
-                const stData = ch.studentMap[student.id];
-                if (stData && stData.possible > 0) {
-                    const pct = (stData.obtained / stData.possible) * 100;
-                    if (pct < 60 && ch.questionCount > 0) {
-                        weakChapters.push({ code: ch.info.code, name: ch.info.name, percentage: pct });
+                    if (pct < 60) {
+                        weakChapters.push({ code: ch.code, name: ch.name, pct: pct });
                     }
                 }
             });
 
-            weakListEl.innerHTML = '';
             if (weakChapters.length === 0) {
-                weakListEl.innerHTML = `<p class="text-xs text-emerald-600 font-semibold bg-emerald-50 p-3 rounded-xl border border-emerald-200"><i class="fa-solid fa-circle-check mr-1"></i> Syabas! Tiada bab di bawah 60%.</p>`;
+                weakListEl.innerHTML = `
+                    <div class="p-3 bg-brand-50 text-brand-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-brand-200">
+                        <i class="fa-solid fa-circle-check text-brand-600 text-base"></i>
+                        <span>Tahniah! Semua bab yang diuji berada pada tahap penguasaan cemerlang (≥ 60%).</span>
+                    </div>
+                `;
             } else {
-                weakChapters.forEach(wc => {
-                    const div = document.createElement('div');
-                    div.className = 'bg-accent-50 border border-accent-200 p-2.5 rounded-xl flex justify-between items-center text-xs';
-                    div.innerHTML = `
+                weakChapters.sort((a, b) => a.pct - b.pct).forEach(w => {
+                    const item = document.createElement('div');
+                    item.className = 'p-2.5 bg-accent-50 rounded-xl border border-accent-200 flex justify-between items-center text-xs';
+                    item.innerHTML = `
                         <div class="truncate pr-2">
-                            <span class="font-bold text-accent-900 block">${wc.code}</span>
-                            <span class="text-[11px] text-accent-700 truncate block">${wc.name}</span>
+                            <span class="font-bold text-accent-800">${w.code}</span>
+                            <p class="text-[11px] text-slate-600 truncate">${w.name}</p>
                         </div>
-                        <span class="font-extrabold text-accent-600 shrink-0 bg-white px-2 py-1 rounded-lg border border-accent-200">${wc.percentage.toFixed(1)}%</span>
+                        <span class="font-extrabold text-accent-700 shrink-0 bg-white px-2 py-1 rounded-lg border border-accent-200">${w.pct.toFixed(0)}%</span>
                     `;
-                    weakListEl.appendChild(div);
+                    weakListEl.appendChild(item);
                 });
             }
 
+            // Render Radar Chart
+            renderStudentChapterChart(chapAnalytics);
+
+            // Render Test Breakdown Tables
             detailsContainer.innerHTML = '';
             appState.tests.forEach(test => {
-                const testRes = calculateStudentTestScore(student.id, test);
-                const tDiv = document.createElement('div');
-                tDiv.className = 'bg-slate-50 border border-slate-200 rounded-xl p-4';
+                let testScoreText = "";
+                let detailsRowsHtml = "";
 
-                let qTableHtml = `
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="text-xs font-bold text-slate-900 uppercase">${test.title}</h4>
-                        <span class="text-xs font-extrabold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg border border-brand-200">
-                            Skor: ${testRes.obtained} / ${testRes.totalPossible} (${testRes.percentage.toFixed(1)}%)
-                        </span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-xs text-left">
-                            <thead class="bg-slate-200 text-slate-700 uppercase text-[10px]">
-                                <tr>
-                                    <th class="p-2">Soalan</th>
-                                    <th class="p-2">Bab Biologi</th>
-                                    <th class="p-2 text-center">Markah Penuh</th>
-                                    <th class="p-2 text-center">Markah Diperoleh</th>
-                                    <th class="p-2 text-center">Pencapaian (%)</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200 bg-white">
-                `;
+                if (selectedId === "ALL") {
+                    let testTotal = 0;
+                    appState.students.forEach(s => testTotal += calculateStudentTestScore(s.id, test).percentage);
+                    const avg = appState.students.length > 0 ? testTotal / appState.students.length : 0;
+                    testScoreText = `Purata Kelas: ${avg.toFixed(1)}%`;
+                } else {
+                    const res = calculateStudentTestScore(selectedId, test);
+                    testScoreText = `Skor: ${res.obtained} / ${res.totalPossible} (${res.percentage.toFixed(1)}%)`;
+                }
 
                 test.questions.forEach(q => {
-                    const obtainedMark = test.scores[student.id]?.[q.id] !== undefined ? test.scores[student.id][q.id] : 0;
-                    const qMax = q.maxMarks || 10;
-                    const qPct = (obtainedMark / qMax) * 100;
-                    qTableHtml += `
-                        <tr>
-                            <td class="p-2 font-semibold text-slate-800">${q.label}</td>
-                            <td class="p-2 text-slate-600">${q.chapterCode || '-'}</td>
-                            <td class="p-2 text-center text-slate-500">${qMax}</td>
-                            <td class="p-2 text-center font-bold text-slate-900">${obtainedMark}</td>
-                            <td class="p-2 text-center font-semibold ${qPct >= 70 ? 'text-brand-600' : qPct >= 50 ? 'text-amber-600' : 'text-rose-600'}">${qPct.toFixed(1)}%</td>
+                    const chInfo = CHAPTERS.find(c => c.code === q.chapterCode);
+                    const chName = chInfo ? chInfo.name : "Bab Tidak Ditetapkan";
+
+                    let scoreVal = 0;
+                    if (selectedId === "ALL") {
+                        let qSum = 0;
+                        appState.students.forEach(s => qSum += (parseFloat(test.scores[s.id]?.[q.id]) || 0));
+                        scoreVal = appState.students.length > 0 ? (qSum / appState.students.length) : 0;
+                    } else {
+                        scoreVal = parseFloat(test.scores[selectedId]?.[q.id]) || 0;
+                    }
+
+                    const pct = q.maxMarks > 0 ? (scoreVal / q.maxMarks) * 100 : 0;
+                    const badgeClass = pct >= 75 ? "bg-brand-50 text-brand-700 border-brand-200" : pct >= 50 ? "bg-accent-50 text-accent-700 border-accent-200" : "bg-rose-50 text-rose-700 border-rose-200";
+
+                    detailsRowsHtml += `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50">
+                            <td class="px-4 py-2.5 font-bold text-slate-800">${q.label}</td>
+                            <td class="px-4 py-2.5 font-semibold text-brand-700">${q.chapterCode}</td>
+                            <td class="px-4 py-2.5 text-slate-600 truncate max-w-xs">${chName}</td>
+                            <td class="px-4 py-2.5 text-center font-bold text-slate-800">${scoreVal.toFixed(1)} / ${q.maxMarks}</td>
+                            <td class="px-4 py-2.5 text-center">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeClass}">
+                                    ${pct.toFixed(0)}%
+                                </span>
+                            </td>
                         </tr>
                     `;
                 });
 
-                qTableHtml += `</tbody></table></div>`;
-                tDiv.innerHTML = qTableHtml;
-                detailsContainer.appendChild(tDiv);
+                const testCard = document.createElement('div');
+                testCard.className = 'border border-slate-200 rounded-xl overflow-hidden shadow-sm';
+                testCard.innerHTML = `
+                    <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
+                        <h4 class="font-bold text-slate-900 text-xs flex items-center gap-2">
+                            <i class="fa-solid fa-file-signature text-accent-600"></i>
+                            ${test.title}
+                        </h4>
+                        <span class="text-xs font-extrabold text-brand-700 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">${testScoreText}</span>
+                    </div>
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-xs text-left text-slate-600">
+                            <thead class="text-[11px] text-slate-700 uppercase bg-slate-100/50">
+                                <tr>
+                                    <th class="px-4 py-2">Soalan</th>
+                                    <th class="px-4 py-2">Kod Bab</th>
+                                    <th class="px-4 py-2">Tajuk Bab</th>
+                                    <th class="px-4 py-2 text-center">Markah</th>
+                                    <th class="px-4 py-2 text-center">Peratus</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${detailsRowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                detailsContainer.appendChild(testCard);
             });
-
-            renderStudentRadarChart(student.id, chapAnalytics);
         }
 
-        function renderStudentRadarChart(studentId, chapAnalytics) {
+        function renderStudentChapterChart(chapAnalytics) {
             const canvas = document.getElementById('studentChapterRadar');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
+            const selectedId = appState.selectedStudentId;
             const testedChapters = Object.values(chapAnalytics).filter(c => c.questionCount > 0);
             const labels = testedChapters.map(c => c.info.code);
 
-            let dataScores = [];
-            if (studentId === null) {
-                dataScores = testedChapters.map(c => c.totalPossible > 0 ? ((c.totalObtained / c.totalPossible) * 100).toFixed(1) : 0);
-            } else {
-                dataScores = testedChapters.map(c => {
-                    const st = c.studentMap[studentId];
-                    return st && st.possible > 0 ? ((st.obtained / st.possible) * 100).toFixed(1) : 0;
-                });
-            }
+            const scores = testedChapters.map(c => {
+                if (selectedId === "ALL") {
+                    return c.totalPossible > 0 ? ((c.totalObtained / c.totalPossible) * 100).toFixed(1) : 0;
+                } else {
+                    const sData = c.studentMap[selectedId];
+                    return sData && sData.possible > 0 ? ((sData.obtained / sData.possible) * 100).toFixed(1) : 0;
+                }
+            });
 
             if (chartStudentRadarRef) chartStudentRadarRef.destroy();
 
             chartStudentRadarRef = new Chart(ctx, {
-                type: 'radar',
+                type: 'bar',
                 data: {
-                    labels: labels.length > 0 ? labels : ['Tiada Data'],
+                    labels: labels.length > 0 ? labels : ['Belum Ada Data'],
                     datasets: [{
-                        label: studentId === null ? 'Purata Kelas (%)' : 'Skor Murid (%)',
-                        data: dataScores.length > 0 ? dataScores : [0],
-                        backgroundColor: 'rgba(22, 163, 74, 0.2)',
-                        borderColor: '#16a34a',
-                        pointBackgroundColor: '#ea580c',
-                        pointBorderColor: '#ffffff',
-                        pointHoverBackgroundColor: '#ffffff',
-                        pointHoverBorderColor: '#ea580c'
+                        label: 'Penguasaan Bab (%)',
+                        data: scores.length > 0 ? scores : [0],
+                        backgroundColor: '#16a34a',
+                        borderColor: '#15803d',
+                        borderRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        r: { min: 0, max: 100, ticks: { stepSize: 20 } }
-                    }
+                        y: { min: 0, max: 100, ticks: { callback: v => v + '%' } }
+                    },
+                    plugins: { legend: { display: false } }
                 }
             });
         }
 
-        window.filterChapterSyllabus = function(level) {
-            appState.chapterSyllabusFilter = level;
-            ['all', 't4', 't5'].forEach(l => {
-                const btn = document.getElementById(`btn-chap-${l}`);
+        window.filterChapterSyllabus = function(filter) {
+            appState.chapterSyllabusFilter = filter;
+            ['all', 't4', 't5'].forEach(f => {
+                const btn = document.getElementById(`btn-chap-${f}`);
                 if (btn) {
-                    if (l === level.toLowerCase()) {
-                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white";
+                    if (f === filter.toLowerCase()) {
+                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white shadow-sm";
                     } else {
                         btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200";
                     }
@@ -1681,11 +1723,11 @@
 
         function renderChapterCards(chapAnalytics) {
             const grid = document.getElementById('chapterCardsGrid');
-            const subtitle = document.getElementById('chapterMasterySubtitle');
             if (!grid) return;
-
             grid.innerHTML = '';
-            const filter = appState.chapterSyllabusFilter;
+
+            const selectedId = appState.selectedStudentId;
+            const filter = appState.chapterSyllabusFilter || 'ALL';
 
             const filteredChapters = CHAPTERS.filter(ch => {
                 if (filter === 'T4') return ch.level === 'T4';
@@ -1693,38 +1735,54 @@
                 return true;
             });
 
-            if (subtitle) {
-                subtitle.textContent = `Menunjukkan ${filteredChapters.length} bab Biologi (${filter === 'ALL' ? 'Semua' : filter})`;
-            }
-
             filteredChapters.forEach(ch => {
-                const analytics = chapAnalytics[ch.code] || { questionCount: 0, totalObtained: 0, totalPossible: 0 };
-                const pct = analytics.totalPossible > 0 ? (analytics.totalObtained / analytics.totalPossible) * 100 : 0;
-                const isTested = analytics.questionCount > 0;
+                const data = chapAnalytics[ch.code];
+                let pct = 0;
+                let tested = false;
+
+                if (data && data.questionCount > 0) {
+                    tested = true;
+                    if (selectedId === "ALL") {
+                        pct = data.totalPossible > 0 ? (data.totalObtained / data.totalPossible) * 100 : 0;
+                    } else {
+                        const sData = data.studentMap[selectedId];
+                        pct = sData && sData.possible > 0 ? (sData.obtained / sData.possible) * 100 : 0;
+                    }
+                }
+
+                let borderClass = "border-slate-200 bg-white";
+                let badgeClass = "bg-slate-100 text-slate-500";
+                let statusLabel = "Belum Diuji";
+
+                if (tested) {
+                    if (pct >= 75) {
+                        borderClass = "border-emerald-300 bg-emerald-50/30";
+                        badgeClass = "bg-brand-100 text-brand-800 border-brand-300";
+                        statusLabel = `${pct.toFixed(0)}% • Cemerlang`;
+                    } else if (pct >= 50) {
+                        borderClass = "border-accent-300 bg-accent-50/30";
+                        badgeClass = "bg-accent-100 text-accent-800 border-accent-300";
+                        statusLabel = `${pct.toFixed(0)}% • Sederhana`;
+                    } else {
+                        borderClass = "border-rose-300 bg-rose-50/30";
+                        badgeClass = "bg-rose-100 text-rose-800 border-rose-300";
+                        statusLabel = `${pct.toFixed(0)}% • Lemah`;
+                    }
+                }
 
                 const card = document.createElement('div');
-                card.className = `p-4 rounded-2xl border transition shadow-sm flex flex-col justify-between ${isTested ? 'bg-white border-slate-200' : 'bg-slate-50/70 border-slate-200/60 opacity-75'}`;
-
+                card.className = `p-4 rounded-2xl border shadow-sm flex flex-col justify-between transition hover:shadow-md ${borderClass}`;
                 card.innerHTML = `
                     <div>
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${ch.level === 'T4' ? 'bg-brand-50 text-brand-700 border border-brand-200' : 'bg-accent-50 text-accent-700 border border-accent-200'}">
-                                ${ch.code} (${ch.level})
-                            </span>
-                            <span class="text-xs font-extrabold ${isTested ? (pct >= 70 ? 'text-brand-600' : pct >= 50 ? 'text-amber-600' : 'text-rose-600') : 'text-slate-400'}">
-                                ${isTested ? pct.toFixed(1) + '%' : 'Belum Diuji'}
-                            </span>
+                        <div class="flex justify-between items-start gap-2 mb-2">
+                            <span class="text-xs font-extrabold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-lg border border-brand-200">${ch.code}</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeClass}">${statusLabel}</span>
                         </div>
-                        <h4 class="text-xs font-bold text-slate-800 line-clamp-2 mb-2">${ch.name}</h4>
+                        <h4 class="text-xs font-bold text-slate-800 line-clamp-2">${ch.name}</h4>
                     </div>
-                    <div>
-                        <div class="w-full bg-slate-100 rounded-full h-2 mb-2 overflow-hidden border border-slate-200">
-                            <div class="h-2 rounded-full ${pct >= 70 ? 'bg-brand-500' : pct >= 50 ? 'bg-amber-500' : 'bg-rose-500'}" style="width: ${isTested ? pct : 0}%"></div>
-                        </div>
-                        <div class="flex justify-between items-center text-[10px] text-slate-400">
-                            <span>Item Soalan: ${analytics.questionCount}</span>
-                            <span>Status: ${isTested ? 'Aktif' : 'Menunggu'}</span>
-                        </div>
+                    <div class="mt-3 pt-2 border-t border-slate-100/80 flex justify-between items-center text-[10px] text-slate-500">
+                        <span>Tingkatan: ${ch.level === 'T4' ? 'Tingkatan 4' : 'Tingkatan 5'}</span>
+                        <span>Item Diuji: ${data ? data.questionCount : 0}</span>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -1732,21 +1790,27 @@
         }
 
         function renderTeacherPortal() {
-            const btnContainer = document.getElementById('testSelectButtons');
-            if (!btnContainer) return;
+            if (!appState.isTeacherMode) return;
 
-            btnContainer.innerHTML = '';
-            appState.tests.forEach(test => {
-                const isActive = test.id === appState.activeTestId;
-                const btn = document.createElement('button');
-                btn.className = `px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${isActive ? 'bg-brand-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`;
-                btn.textContent = test.title;
-                btn.onclick = () => {
-                    appState.activeTestId = test.id;
-                    renderTeacherPortal();
-                };
-                btnContainer.appendChild(btn);
-            });
+            const testSelectContainer = document.getElementById('testSelectButtons');
+            if (testSelectContainer) {
+                testSelectContainer.innerHTML = '';
+                appState.tests.forEach(test => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => {
+                        appState.activeTestId = test.id;
+                        renderTeacherPortal();
+                    };
+
+                    if (test.id === appState.activeTestId) {
+                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-brand-600 text-white shadow-sm";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200";
+                    }
+                    btn.textContent = test.title;
+                    testSelectContainer.appendChild(btn);
+                });
+            }
 
             const activeTest = appState.tests.find(t => t.id === appState.activeTestId) || appState.tests[0];
             if (!activeTest) return;
@@ -1754,190 +1818,160 @@
             document.getElementById('currentTestConfigTitle').textContent = `Tetapan Soalan & Bab - ${activeTest.title}`;
             document.getElementById('quickQuestionCountInput').value = activeTest.questions.length;
 
-            const qGrid = document.getElementById('questionConfigGrid');
-            qGrid.innerHTML = '';
+            // Question Config Grid
+            const configGrid = document.getElementById('questionConfigGrid');
+            if (configGrid) {
+                configGrid.innerHTML = '';
+                activeTest.questions.forEach(q => {
+                    const card = document.createElement('div');
+                    card.className = "bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2";
 
-            activeTest.questions.forEach((q, idx) => {
-                const qCard = document.createElement('div');
-                qCard.className = 'bg-slate-50 border border-slate-200 p-3 rounded-xl space-y-2';
+                    let optionsHtml = CHAPTERS.map(ch => 
+                        `<option value="${ch.code}" ${ch.code === q.chapterCode ? 'selected' : ''}>${ch.code} - ${ch.name.substring(0,25)}...</option>`
+                    ).join('');
 
-                let chapterOptions = '';
-                CHAPTERS.forEach(ch => {
-                    const selected = q.chapterCode === ch.code ? 'selected' : '';
-                    chapterOptions += `<option value="${ch.code}" ${selected}>${ch.code}</option>`;
-                });
-
-                qCard.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold text-slate-800">S${idx + 1}</span>
-                        <button onclick="removeQuestionFromTest(${q.id})" class="text-rose-500 hover:text-rose-700 text-xs" title="Padam Soalan">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Bab:</label>
-                        <select onchange="updateQuestionChapter(${q.id}, this.value)" class="w-full text-xs bg-white border border-slate-300 rounded-lg p-1">
-                            ${chapterOptions}
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-800">${q.label}</span>
+                            <div class="flex items-center space-x-1">
+                                <span class="text-[10px] text-slate-500">Max:</span>
+                                <input type="number" value="${q.maxMarks}" min="1" max="100" onchange="updateQuestionMaxMark(${q.id}, this.value)" class="w-12 text-center text-xs font-bold bg-white border border-slate-300 rounded p-0.5">
+                            </div>
+                        </div>
+                        <select onchange="updateQuestionChapter(${q.id}, this.value)" class="w-full text-[11px] bg-white border border-slate-300 rounded-lg p-1.5 font-medium text-slate-700 focus:ring-brand-500">
+                            ${optionsHtml}
                         </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Markah Penuh:</label>
-                        <input type="number" min="1" max="100" value="${q.maxMarks}" onchange="updateQuestionMaxMarks(${q.id}, this.value)" class="w-full text-xs bg-white border border-slate-300 rounded-lg p-1 font-bold text-slate-800">
-                    </div>
-                `;
-                qGrid.appendChild(qCard);
-            });
+                    `;
+                    configGrid.appendChild(card);
+                });
+            }
 
-            renderTeacherMarksTable(activeTest);
-        }
-
-        function renderTeacherMarksTable(activeTest) {
+            // Student Marks Table in Teacher Portal
             const theadRow = document.getElementById('marksTableHeaderRow');
             const tbody = document.getElementById('marksTableBody');
-            if (!tbody) return;
 
-            let headerHtml = `
-                <th class="p-3 text-center">BIL</th>
-                <th class="p-3">NAMA MURID</th>
-            `;
-
-            activeTest.questions.forEach((q, idx) => {
-                headerHtml += `<th class="p-3 text-center whitespace-nowrap">S${idx + 1} <br><span class="text-[9px] text-slate-500 font-normal">(${q.chapterCode}, Max ${q.maxMarks})</span></th>`;
-            });
-
-            headerHtml += `<th class="p-3 text-center bg-emerald-50">JUMLAH / %</th>`;
-
-            if (theadRow) theadRow.innerHTML = headerHtml;
-            tbody.innerHTML = '';
-
-            appState.students.forEach((s, idx) => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
-
-                let rowHtml = `
-                    <td class="p-3 text-center font-medium text-slate-500">${idx + 1}</td>
-                    <td class="p-3 font-semibold text-slate-800 whitespace-nowrap">${s.name}</td>
+            if (theadRow) {
+                let ths = `
+                    <th class="px-4 py-3 text-center">BIL</th>
+                    <th class="px-4 py-3">NAMA MURID</th>
                 `;
-
                 activeTest.questions.forEach(q => {
-                    const currentVal = activeTest.scores[s.id]?.[q.id] !== undefined ? activeTest.scores[s.id][q.id] : '';
-                    rowHtml += `
-                        <td class="p-2 text-center">
-                            <input type="number" min="0" max="${q.maxMarks}" value="${currentVal}" onchange="updateStudentMark(${s.id}, ${q.id}, this.value)" class="w-14 text-center bg-slate-50 border border-slate-300 rounded-lg py-1 font-bold text-slate-800 focus:bg-white focus:ring-1 focus:ring-brand-500">
-                        </td>
-                    `;
+                    ths += `<th class="px-3 py-3 text-center whitespace-nowrap">${q.label}<br><span class="text-[9px] text-brand-600 font-bold">(${q.chapterCode})</span></th>`;
                 });
-
-                const testRes = calculateStudentTestScore(s.id, activeTest);
-                rowHtml += `
-                    <td class="p-3 text-center font-extrabold text-slate-900 bg-emerald-50/50 whitespace-nowrap">
-                        ${testRes.obtained} / ${testRes.totalPossible} <br>
-                        <span class="text-xs text-brand-700">${testRes.percentage.toFixed(1)}%</span>
-                    </td>
+                ths += `
+                    <th class="px-4 py-3 text-center bg-emerald-100">JUMLAH</th>
+                    <th class="px-4 py-3 text-center bg-emerald-200">%</th>
                 `;
+                theadRow.innerHTML = ths;
+            }
 
-                tr.innerHTML = rowHtml;
-                tbody.appendChild(tr);
-            });
+            if (tbody) {
+                tbody.innerHTML = '';
+                appState.students.forEach((s, idx) => {
+                    const scoreRes = calculateStudentTestScore(s.id, activeTest);
+
+                    let tds = `
+                        <td class="px-4 py-2.5 text-center font-medium text-slate-500">${idx + 1}</td>
+                        <td class="px-4 py-2.5 font-semibold text-slate-800">${s.name}</td>
+                    `;
+
+                    activeTest.questions.forEach(q => {
+                        const scoreVal = activeTest.scores[s.id]?.[q.id] !== undefined ? activeTest.scores[s.id][q.id] : 0;
+                        tds += `
+                            <td class="px-2 py-2 text-center">
+                                <input type="number" value="${scoreVal}" min="0" max="${q.maxMarks}" step="0.5" onchange="updateStudentScore(${s.id}, ${q.id}, this.value)" class="w-14 text-center text-xs font-bold bg-white border border-slate-300 rounded-lg py-1 focus:ring-accent-500 focus:border-accent-500">
+                            </td>
+                        `;
+                    });
+
+                    tds += `
+                        <td class="px-4 py-2.5 text-center font-bold text-slate-800 bg-emerald-50">${scoreRes.obtained} / ${scoreRes.totalPossible}</td>
+                        <td class="px-4 py-2.5 text-center font-extrabold text-brand-700 bg-emerald-100">${scoreRes.percentage.toFixed(1)}%</td>
+                    `;
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 border-b border-slate-100';
+                    tr.innerHTML = tds;
+                    tbody.appendChild(tr);
+                });
+            }
         }
 
-        window.updateStudentMark = function(studentId, qId, val) {
+        window.updateQuestionChapter = function(qId, chapCode) {
             const activeTest = appState.tests.find(t => t.id === appState.activeTestId);
             if (!activeTest) return;
-
-            if (!activeTest.scores[studentId]) {
-                activeTest.scores[studentId] = {};
-            }
-
-            const qObj = activeTest.questions.find(q => q.id === qId);
-            const max = qObj ? qObj.maxMarks : 10;
-            const parsed = parseFloat(val);
-
-            activeTest.scores[studentId][qId] = isNaN(parsed) ? 0 : Math.min(Math.max(0, parsed), max);
-            saveLocalState();
-            renderTeacherMarksTable(activeTest);
-        };
-
-        window.updateQuestionChapter = function(qId, chapterCode) {
-            const activeTest = appState.tests.find(t => t.id === appState.activeTestId);
-            if (!activeTest) return;
-            const q = activeTest.questions.find(item => item.id === qId);
+            const q = activeTest.questions.find(q => q.id === qId);
             if (q) {
-                q.chapterCode = chapterCode;
-                saveLocalState();
+                q.chapterCode = chapCode;
+                saveAllDataToCloud();
+                renderDashboard();
             }
         };
 
-        window.updateQuestionMaxMarks = function(qId, maxMarks) {
+        window.updateQuestionMaxMark = function(qId, val) {
             const activeTest = appState.tests.find(t => t.id === appState.activeTestId);
             if (!activeTest) return;
-            const q = activeTest.questions.find(item => item.id === qId);
+            const q = activeTest.questions.find(q => q.id === qId);
             if (q) {
-                q.maxMarks = parseFloat(maxMarks) || 10;
-                saveLocalState();
-                renderTeacherPortal();
+                q.maxMarks = parseFloat(val) || 10;
+                saveAllDataToCloud();
+                renderDashboard();
             }
+        };
+
+        window.updateStudentScore = function(sId, qId, val) {
+            const activeTest = appState.tests.find(t => t.id === appState.activeTestId);
+            if (!activeTest) return;
+            if (!activeTest.scores[sId]) activeTest.scores[sId] = {};
+
+            const q = activeTest.questions.find(q => q.id === qId);
+            const maxM = q ? q.maxMarks : 10;
+
+            activeTest.scores[sId][qId] = Math.min(Math.max(0, parseFloat(val) || 0), maxM);
+            saveAllDataToCloud();
+            renderDashboard();
         };
 
         window.applyQuestionCountFromInput = function() {
-            const count = parseInt(document.getElementById('quickQuestionCountInput').value);
-            if (isNaN(count) || count < 1 || count > 50) {
-                showToast("Sila masukkan bilangan soalan antara 1 hingga 50.", "error");
-                return;
-            }
-
             const activeTest = appState.tests.find(t => t.id === appState.activeTestId);
             if (!activeTest) return;
 
-            while (activeTest.questions.length < count) {
-                const newId = activeTest.questions.length + 1;
-                activeTest.questions.push({
-                    id: newId,
-                    label: `Soalan ${newId}`,
-                    chapterCode: "T4 - 1.0",
-                    maxMarks: 10
-                });
+            const targetCount = parseInt(document.getElementById('quickQuestionCountInput').value) || 1;
+            const currentCount = activeTest.questions.length;
+
+            if (targetCount > currentCount) {
+                for (let i = currentCount + 1; i <= targetCount; i++) {
+                    activeTest.questions.push({
+                        id: i,
+                        label: `Soalan ${i}`,
+                        chapterCode: "T4 - 1.0",
+                        maxMarks: 10
+                    });
+                }
+            } else if (targetCount < currentCount) {
+                activeTest.questions = activeTest.questions.slice(0, targetCount);
             }
 
-            if (activeTest.questions.length > count) {
-                activeTest.questions = activeTest.questions.slice(0, count);
-            }
-
-            saveLocalState();
-            renderTeacherPortal();
-            showToast("Bilangan soalan berjaya dikemaskini!", "success");
+            saveAllDataToCloud();
+            renderDashboard();
+            showToast("Bilangan soalan dikemaskini!", "success");
         };
 
         window.addQuestionToCurrentTest = function() {
             const activeTest = appState.tests.find(t => t.id === appState.activeTestId);
             if (!activeTest) return;
 
-            const newId = activeTest.questions.length > 0 ? Math.max(...activeTest.questions.map(q => q.id)) + 1 : 1;
+            const nextId = activeTest.questions.length + 1;
             activeTest.questions.push({
-                id: newId,
-                label: `Soalan ${newId}`,
+                id: nextId,
+                label: `Soalan ${nextId}`,
                 chapterCode: "T4 - 1.0",
                 maxMarks: 10
             });
 
-            saveLocalState();
-            renderTeacherPortal();
+            saveAllDataToCloud();
+            renderDashboard();
             showToast("1 Soalan baharu ditambah!", "success");
-        };
-
-        window.removeQuestionFromTest = function(qId) {
-            const activeTest = appState.tests.find(t => t.id === appState.activeTestId);
-            if (!activeTest) return;
-
-            if (activeTest.questions.length <= 1) {
-                showToast("Set ujian mesti mempunyai sekurang-kurangnya 1 soalan.", "error");
-                return;
-            }
-
-            activeTest.questions = activeTest.questions.filter(q => q.id !== qId);
-            saveLocalState();
-            renderTeacherPortal();
-            showToast("Soalan dipadam.", "info");
         };
 
         window.openAddTestModal = function() {
@@ -1950,14 +1984,9 @@
         };
 
         window.executeAddNewTest = function() {
-            const title = document.getElementById('newTestTitleInput').value.trim().toUpperCase();
+            const title = document.getElementById('newTestTitleInput').value.trim() || `UJIAN ${appState.tests.length + 1}`;
             const qCount = parseInt(document.getElementById('newTestQCountInput').value) || 10;
-            const defMax = parseInt(document.getElementById('newTestDefaultMaxInput').value) || 10;
-
-            if (!title) {
-                showToast("Sila masukkan nama set ujian.", "error");
-                return;
-            }
+            const defaultMax = parseInt(document.getElementById('newTestDefaultMaxInput').value) || 10;
 
             const newId = "u_" + Date.now();
             const questions = [];
@@ -1966,22 +1995,24 @@
                     id: i,
                     label: `Soalan ${i}`,
                     chapterCode: "T4 - 1.0",
-                    maxMarks: defMax
+                    maxMarks: defaultMax
                 });
             }
 
-            appState.tests.push({
+            const newTest = {
                 id: newId,
                 title: title,
                 questions: questions,
                 scores: {}
-            });
+            };
 
+            appState.tests.push(newTest);
             appState.activeTestId = newId;
-            saveAllDataToCloud();
+
             closeAddTestModal();
+            saveAllDataToCloud();
             renderDashboard();
-            showToast(`Set ujian "${title}" berjaya dicipta!`, "success");
+            showToast("Set Ujian Baharu berjaya ditambah!", "success");
         };
 
         window.openEditTestModal = function() {
@@ -1996,27 +2027,24 @@
         };
 
         window.executeSaveEditTestTitle = function() {
-            const newTitle = document.getElementById('editTestTitleInput').value.trim().toUpperCase();
-            if (!newTitle) return;
-
             const activeTest = appState.tests.find(t => t.id === appState.activeTestId);
-            if (activeTest) {
+            if (!activeTest) return;
+
+            const newTitle = document.getElementById('editTestTitleInput').value.trim();
+            if (newTitle) {
                 activeTest.title = newTitle;
-                saveAllDataToCloud();
                 closeEditTestModal();
+                saveAllDataToCloud();
                 renderDashboard();
-                showToast("Nama set ujian dikemaskini!", "success");
+                showToast("Nama ujian dikemaskini!", "success");
             }
         };
 
         window.confirmDeleteActiveTest = function() {
             if (appState.tests.length <= 1) {
-                showToast("Sistem memerlukan sekurang-kurangnya 1 set ujian aktif.", "error");
+                showToast("Sistem memerlukan sekurang-kurangnya 1 set ujian.", "error");
                 return;
             }
-            const activeTest = appState.tests.find(t => t.id === appState.activeTestId);
-            document.getElementById('confirmDeleteTitle').textContent = `Padam ${activeTest ? activeTest.title : 'Ujian'}?`;
-            document.getElementById('confirmDeleteMessage').textContent = "Tindakan ini akan memadam set ujian ini dan semua markah berkaitan secara kekal.";
             document.getElementById('confirmDeleteModal').classList.remove('hidden');
         };
 
@@ -2027,12 +2055,12 @@
         window.executeDeleteActiveTest = function() {
             appState.tests = appState.tests.filter(t => t.id !== appState.activeTestId);
             appState.activeTestId = appState.tests[0].id;
-            saveAllDataToCloud();
-            closeConfirmDeleteModal();
-            renderDashboard();
-            showToast("Set ujian berjaya dipadam.", "success");
-        };
 
+            closeConfirmDeleteModal();
+            saveAllDataToCloud();
+            renderDashboard();
+            showToast("Set Ujian berjaya dipadam.", "success");
+        };
     </script>
 </body>
 </html>
