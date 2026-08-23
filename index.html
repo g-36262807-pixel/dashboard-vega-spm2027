@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Bio-Dojo Vega SPM 2027 - Masa Nyata</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -2061,6 +2063,35 @@
             renderDashboard();
             showToast("Set Ujian berjaya dipadam.", "success");
         };
+        const firebaseConfig = {
+      apiKey: "AIzaSyBSoBW0cR9-c_fGJ2vNwakaitWnM7jXj-I",
+      authDomain: "dashboard-bio-dojo-vega-2027.firebaseapp.com",
+      projectId: "dashboard-bio-dojo-vega-2027",
+      storageBucket: "dashboard-bio-dojo-vega-2027.firebasestorage.app",
+      messagingSenderId: "294790840383",
+      appId: "1:294790840383:web:ea14abb5b4c211f214388a",
+      measurementId: "G-XG2KJ2TP7P"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Fungsi Masa Nyata untuk Murid
+    db.collection("biodojo").doc("data_utama").onSnapshot((doc) => {
+        if (doc.exists) {
+            const dataFromServer = doc.data();
+            console.log("Data masa nyata diterima:", dataFromServer);
+        }
+    });
+
+    // Fungsi Kemas Kini Admin
+    function simpanDataKeCloud(dataBaru) {
+        db.collection("biodojo").doc("data_utama").set(dataBaru, { merge: true })
+        .then(() => { console.log("Data berjaya dikemas kini!"); });
+    }
+    // ==========================================
+
+</script>
     </script>
 </body>
 </html>
